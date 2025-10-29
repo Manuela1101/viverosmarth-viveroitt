@@ -1,7 +1,7 @@
 ## Documentacion del proyecto
 # 🌿 Proyecto IoT con MicroPython y Flespi MQTT
 
-Este proyecto simula un sistema de **monitoreo de plantas** usando un microcontrolador compatible con **MicroPython** (como ESP32 o ESP8266).  
+Este proyecto simula un sistema de **monitoreo de plantas** usando un microcontrolador compatible con **MicroPython** (como ESP32 o RP2040).  
 El dispositivo envía lecturas simuladas de temperatura, humedad, suelo, luz y agua hacia un **broker MQTT de Flespi**.
 
 ---
