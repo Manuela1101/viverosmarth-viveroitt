@@ -13,6 +13,13 @@ El dispositivo envía lecturas simuladas de temperatura, humedad, suelo, luz y a
 - Conexión WiFi  
 - Cuenta en [https://flespi.io](https://flespi.io)
 
+## 🚀 Instalación
+```bash
+git clone https://github.com/tectijuana/viverosmarth-viveroitt.git
+cd viverosmarth-viveroitt
+dotnet build
+dotnet run
+```
 ---
 
 ## 🔑 Configuración de credenciales
