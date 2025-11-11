@@ -81,46 +81,57 @@ El modelo de **aprendizaje automático** se entrena con TensorFlow Lite y se des
 
 ## 📸 Código Arduino
 
-``` cpp
-#include <Arduino_OV767X.h>
+``` cpp#include <Arduino_OV767X.h>
 
 #define FRAME_WIDTH 160
 #define FRAME_HEIGHT 120
+#define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT)
 
-// Buffer para la imagen (grayscale)
-uint8_t frame_buffer[FRAME_WIDTH * FRAME_HEIGHT];
+// Buffer global alineado para acceso más rápido
+uint8_t frame_buffer[FRAME_SIZE] __attribute__((aligned(4)));
+
+const uint8_t FRAME_START[4] = {0xAA, 0x55, 0xAA, 0x55};
+const uint8_t FRAME_END[4]   = {0x55, 0xAA, 0x55, 0xAA};
 
 void setup() {
   Serial.begin(115200);
   while (!Serial);
-  Serial.println("📷 Iniciando cámara OV7675...");
 
+  Serial.println("Iniciando cámara OV7675...");
+
+  // Modo más estable: baja resolución + escala gris
   if (!Camera.begin(QQVGA, GRAYSCALE, 1)) {
-    Serial.println("❌ Error al iniciar cámara OV7675");
-    while (true);
+    Serial.println("Error al iniciar cámara OV7675");
+    while (true) delay(1000);
   }
 
-  Serial.println("✅ Cámara inicializada correctamente");
-  delay(1000);
+  Serial.println("Cámara inicializada correctamente");
+  delay(500);
 }
 
 void loop() {
-  // Captura directa del frame
+  static uint32_t last_frame_time = millis();
+
+  // Captura el frame (sin retorno)
   Camera.readFrame(frame_buffer);
 
-  // Enviar una marca de inicio
-  Serial.write(0xFF);
-  Serial.write(0xD8);
+  // Marca de inicio
+  Serial.write(FRAME_START, sizeof(FRAME_START));
 
-  // Enviar los datos de la imagen (160x120 bytes)
-  Serial.write(frame_buffer, FRAME_WIDTH * FRAME_HEIGHT);
+  // Enviar buffer completo
+  Serial.write(frame_buffer, FRAME_SIZE);
 
   // Marca de fin
-  Serial.write(0xFF);
-  Serial.write(0xD9);
+  Serial.write(FRAME_END, sizeof(FRAME_END));
 
-  delay(200); // Aproximadamente 5 FPS
+  // Sincronizar ~5 FPS
+  uint32_t frame_time = millis() - last_frame_time;
+  last_frame_time = millis();
+  uint32_t wait_ms = max(0, 200 - (int)frame_time);
+  delay(wait_ms);
 }
+
+
 ```
 
 ------------------------------------------------------------------------
@@ -135,46 +146,72 @@ pip install pyserial numpy opencv-python
 
 Ejecuta este script (ajusta el puerto COM según tu caso):
 
-``` python
-import serial
+``` pythonimport serial
 import numpy as np
 import cv2
+import time
 
-PORT = "COM11"   # Cambia al puerto correcto
-BAUD = 115200
+# ====== CONFIGURACIÓN ======
+PORT = "COM11"          # 🔧 Cambia esto según tu puerto Arduino
+BAUD = 921600          # Debe coincidir con Serial.begin() del Arduino
+FRAME_WIDTH = 160
+FRAME_HEIGHT = 120
+FRAME_SIZE = FRAME_WIDTH * FRAME_HEIGHT
 
-WIDTH = 160
-HEIGHT = 120
-FRAME_SIZE = WIDTH * HEIGHT
+# Delimitadores definidos en el Arduino
+FRAME_START = b'\xAA\x55\xAA\x55'
+FRAME_END = b'\x55\xAA\x55\xAA'
 
+# ====== INICIO ======
 ser = serial.Serial(PORT, BAUD, timeout=1)
-print("Conectado a", PORT)
+time.sleep(2)  # Esperar que se reinicie el Arduino
+
+print("📡 Esperando datos de la cámara...")
 
 buffer = bytearray()
 
-while True:
-    # Leer hasta tener un frame completo
-    if ser.readable():
-        buffer += ser.read(FRAME_SIZE + 4)
+try:
+    while True:
+        data = ser.read(ser.in_waiting or 1)
+        if not data:
+            continue
+        buffer.extend(data)
 
-        # Buscar marca de inicio y fin
-        start = buffer.find(b'\xFF\xD8')
-        end = buffer.find(b'\xFF\xD9', start + 2)
+        # Buscar inicio y fin del frame
+        start_idx = buffer.find(FRAME_START)
+        end_idx = buffer.find(FRAME_END, start_idx + len(FRAME_START))
 
-        if start != -1 and end != -1 and end - start - 2 == FRAME_SIZE:
-            frame_bytes = buffer[start + 2:end]
-            buffer = buffer[end + 2:]
+        if start_idx != -1 and end_idx != -1:
+            # Extraer el bloque de imagen entre los delimitadores
+            frame_data = buffer[start_idx + len(FRAME_START):end_idx]
+            buffer = buffer[end_idx + len(FRAME_END):]  # limpiar el buffer
 
-            # Convertir a numpy array
-            frame = np.frombuffer(frame_bytes, dtype=np.uint8).reshape((HEIGHT, WIDTH))
+            if len(frame_data) == FRAME_SIZE:
+                # Convertir bytes → numpy array → imagen
+                frame = np.frombuffer(frame_data, dtype=np.uint8).reshape((FRAME_HEIGHT, FRAME_WIDTH))
 
-            # Mostrar imagen
-            cv2.imshow("OV7675 Live", frame)
-            if cv2.waitKey(1) == 27:  # ESC para salir
-                break
+                # Mostrar en ventana OpenCV
+                cv2.imshow("Arduino Cam (OV7675)", frame)
 
-ser.close()
-cv2.destroyAllWindows()
+                # Tecla 's' para guardar frame
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('s'):
+                    filename = f"frame_{int(time.time())}.png"
+                    cv2.imwrite(filename, frame)
+                    print(f"💾 Frame guardado como {filename}")
+                elif key == 27:  # ESC para salir
+                    break
+            else:
+                print(f"⚠️ Frame incompleto: {len(frame_data)} bytes")
+
+except KeyboardInterrupt:
+    print("\n🛑 Interrupción manual.")
+
+finally:
+    ser.close()
+    cv2.destroyAllWindows()
+    print("🔚 Conexión cerrada.")
+
 ```
 
 ------------------------------------------------------------------------
