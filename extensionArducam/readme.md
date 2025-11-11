@@ -1,4 +1,4 @@
-# 🌿 Extensión TinyML con Cámara para Proyecto ViveroSmart  
+# 🌿 Extensión TinyML con Cámara para Proyecto ViveroSmart.  
 **Proyecto base:** `viverosmarth-viveroitt`  
 **Autor:** Equipo Vivero ITT  
 **Plataforma:** Arduino Tiny Machine Learning Kit (Arduino Nano 33 BLE Sense + OV7675 Camera)
