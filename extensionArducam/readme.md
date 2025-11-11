@@ -6,7 +6,20 @@
 ---
 
 ## 🎯 Objetivo
-Implementar una extensión de **visión artificial embebida** con **TinyML** para el proyecto *ViveroSmart*, permitiendo el **diagnóstico de salud vegetal** mediante la detección temprana de estrés o enfermedad en hojas de plantas.
+
+Implementar una extensión de visión artificial embebida utilizando TinyML dentro del proyecto ViveroSmart, con el propósito de diagnosticar de manera automática y temprana el estado de salud de las plantas. Esta extensión permitirá identificar síntomas de estrés o enfermedades foliares mediante el procesamiento local de imágenes capturadas por sensores o cámaras integradas, optimizando la gestión del cultivo y reduciendo la necesidad de intervención manual o conexión constante a la nube.
+
+## Objetivos Específicos Complementarios
+
+- Diseñar e implementar un modelo de TinyML entrenado con imágenes de hojas sanas y enfermas de diferentes especies vegetales.
+
+- Optimizar el modelo para ejecución embebida, reduciendo su tamaño y consumo de energía sin afectar la precisión.
+
+- Integrar un módulo de cámara o sensor de imagen que capture hojas y procese las imágenes localmente.
+
+- Evaluar la precisión del diagnóstico en condiciones reales del vivero (iluminación variable, diferentes etapas de crecimiento).
+
+- Conectar el sistema al entorno ViveroSmart, enviando resultados de diagnóstico a la plataforma central o dashboard de monitoreo.
 
 ---
 
