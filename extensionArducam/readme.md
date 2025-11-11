@@ -79,38 +79,142 @@ El modelo de **aprendizaje automático** se entrena con TensorFlow Lite y se des
 
 ---
 
-## ⚙️ Código Base (TinyML Loop)
+## 📸 Código Arduino
 
-```cpp
-#include <Arduino_TensorFlowLite.h>
-#include <TensorFlowLite.h>
-#include <OV767X.h>
-#include "model.h"
+``` cpp
+#include <Arduino_OV767X.h>
 
-int32_t frame_buffer[96*96];
-TfLiteTensor* input = nullptr;
-TfLiteTensor* output = nullptr;
+#define FRAME_WIDTH 160
+#define FRAME_HEIGHT 120
+
+// Buffer para la imagen (grayscale)
+uint8_t frame_buffer[FRAME_WIDTH * FRAME_HEIGHT];
 
 void setup() {
   Serial.begin(115200);
-  Camera.begin(QVGA, RGB565, 1);
-  tflite_setup(model_tflite);
+  while (!Serial);
+  Serial.println("📷 Iniciando cámara OV7675...");
+
+  if (!Camera.begin(QQVGA, GRAYSCALE, 1)) {
+    Serial.println("❌ Error al iniciar cámara OV7675");
+    while (true);
+  }
+
+  Serial.println("✅ Cámara inicializada correctamente");
+  delay(1000);
 }
 
 void loop() {
-  if (Camera.available()) {
-    Camera.readFrame(frame_buffer);
-    preprocess(frame_buffer, input);
-    tflite_invoke();
-    
-    int state = argmax(output);
-    Serial.print("Estado vegetal: "); Serial.println(state);
-    updateLED(state);
-  }
+  // Captura directa del frame
+  Camera.readFrame(frame_buffer);
+
+  // Enviar una marca de inicio
+  Serial.write(0xFF);
+  Serial.write(0xD8);
+
+  // Enviar los datos de la imagen (160x120 bytes)
+  Serial.write(frame_buffer, FRAME_WIDTH * FRAME_HEIGHT);
+
+  // Marca de fin
+  Serial.write(0xFF);
+  Serial.write(0xD9);
+
+  delay(200); // Aproximadamente 5 FPS
 }
 ```
 
----
+------------------------------------------------------------------------
+
+## 🐍 Script Python: Visualización en tiempo real
+
+Instala dependencias:
+
+``` bash
+pip install pyserial numpy opencv-python
+```
+
+Ejecuta este script (ajusta el puerto COM según tu caso):
+
+``` python
+import serial
+import numpy as np
+import cv2
+
+PORT = "COM11"   # Cambia al puerto correcto
+BAUD = 115200
+
+WIDTH = 160
+HEIGHT = 120
+FRAME_SIZE = WIDTH * HEIGHT
+
+ser = serial.Serial(PORT, BAUD, timeout=1)
+print("Conectado a", PORT)
+
+buffer = bytearray()
+
+while True:
+    # Leer hasta tener un frame completo
+    if ser.readable():
+        buffer += ser.read(FRAME_SIZE + 4)
+
+        # Buscar marca de inicio y fin
+        start = buffer.find(b'\xFF\xD8')
+        end = buffer.find(b'\xFF\xD9', start + 2)
+
+        if start != -1 and end != -1 and end - start - 2 == FRAME_SIZE:
+            frame_bytes = buffer[start + 2:end]
+            buffer = buffer[end + 2:]
+
+            # Convertir a numpy array
+            frame = np.frombuffer(frame_bytes, dtype=np.uint8).reshape((HEIGHT, WIDTH))
+
+            # Mostrar imagen
+            cv2.imshow("OV7675 Live", frame)
+            if cv2.waitKey(1) == 27:  # ESC para salir
+                break
+
+ser.close()
+cv2.destroyAllWindows()
+```
+
+------------------------------------------------------------------------
+
+## ⚙️ Funcionamiento
+
+1.  El Arduino inicializa la cámara OV7675 en resolución **QQVGA
+    (160×120)** y modo **grayscale**.\
+
+2.  En cada iteración del `loop()`, captura un frame y lo envía por
+    Serial con el siguiente formato:
+
+        [0xFF][0xD8] + 19200 bytes de imagen + [0xFF][0xD9]
+
+3.  El script Python escucha el puerto serial, detecta los marcadores de
+    inicio/fin y reconstruye el frame.
+
+4.  OpenCV muestra el flujo de video en una ventana a \~5 FPS.
+
+------------------------------------------------------------------------
+
+## 🧩 Solución de problemas
+
+  -----------------------------------------------------------------------
+  Problema                            Solución
+  ----------------------------------- -----------------------------------
+  ❌ `No device found on COMx`        Verifica el puerto en Arduino IDE o
+                                      cambia de cable USB
+
+  ⚫ Imagen distorsionada             Baja la velocidad
+                                      `Serial.begin(57600)` o aumenta
+                                      `delay(300)`
+
+  🪫 Cámara no inicializa             Usa
+                                      `Camera.begin(QQVGA, RGB565, 1)` si
+                                      tu sensor no soporta GRAYSCALE
+
+  🧱 No se muestra nada en Python     Revisa que el puerto COM coincida y
+                                      que el buffer contenga datos
+  -----------------------------------------------------------------------
 
 ## 🚀 Resultados Esperados
 
