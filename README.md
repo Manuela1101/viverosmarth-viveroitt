@@ -11,6 +11,7 @@ El dispositivo envía lecturas simuladas de temperatura, humedad, suelo, luz y a
 - Galeana Leja Jesus Eduardo
 - Castillo Enriquez Hugo
 - Marcelino Escalante Martin Omar
+- Martinez Herrera Oscar Paul
 ## 🚀 Requisitos
 
 - Placa Raspberry Pi Pico W 
