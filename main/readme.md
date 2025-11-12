@@ -135,6 +135,63 @@ Scripts Python de visualización (por ejemplo, en Grafana o Node-RED)
 
 Sistemas TinyML locales que correlacionen condiciones ambientales con diagnóstico foliar
 
+Ejemplo de tópicos:
+| Tópico MQTT         | Descripción                 | Unidad        |
+| ------------------- | --------------------------- | ------------- |
+| `plantcare/1/temp`  | Temperatura ambiental       | °C            |
+| `plantcare/1/hum`   | Humedad relativa            | %             |
+| `plantcare/1/soil`  | Humedad del suelo           | %             |
+| `plantcare/1/air`   | Calidad del aire            | %             |
+| `plantcare/1/light` | Intensidad lumínica         | lux           |
+| `plantcare/1/water` | Estado del sistema de riego | binario (0/1) |
+
+---
+
+## 🧪 Pruebas y Validación
+
+- ✅ Conexión estable a WiFi en menos de 5 segundos
+
+- ✅ Publicación continua a MQTT con intervalo de 5 s
+
+- ✅ Compatibilidad probada con Flespi.io y Mosquitto
+
+- ⚙️ Fácil adaptación para sensores físicos (reemplazando la función read_sensors())
+
+---
+## 🧩 Solución de Problemas
+
+| Problema                       | Posible causa                            | Solución                                     |
+| ------------------------------ | ---------------------------------------- | -------------------------------------------- |
+| ❌ `WiFi no conecta`            | Credenciales incorrectas                 | Revisar `password.py`                        |
+| ⚠️ `No se publican datos MQTT` | Token Flespi vencido o *broker* inactivo | Regenerar token o reiniciar *broker*         |
+| 🔁 Reinicios continuos         | Fuente de poder inestable                | Usar fuente 5V/2A o puerto USB confiable     |
+| 💤 No hay lecturas             | Sensor físico no inicializado            | Activar modo simulado o verificar conexiones |
+
+---
+## 🚀 Resultados Esperados
+
+- Transmisión continua de datos ambientales
+
+- Integración con dashboard de monitoreo en tiempo real
+
+- Comunicación eficiente con bajo consumo energético
+
+- Base funcional para correlacionar datos ambientales con inferencias TinyML
+---
+## 📚 Referencias
+
+- MicroPython MQTT Client – https://docs.micropython.org/en/latest/library/umqtt.simple.html
+
+- Flespi MQTT Broker – https://flespi.com/mqtt-broker
+
+- Node-RED + MQTT Dashboard – https://nodered.org/docs/
+
+- Arduino TinyML Kit – https://docs.arduino.cc/tutorials/
+
+© 2025 Equipo Vivero ITT
+Módulo IoT del sistema ViveroSmart para integración de sensores ambientales y diagnóstico inteligente.
+
+
 
 
 
