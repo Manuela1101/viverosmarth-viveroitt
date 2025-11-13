@@ -13,6 +13,7 @@ El dispositivo envía lecturas simuladas de temperatura, humedad, suelo, luz y a
 - Marcelino Escalante Martin Omar
 - Martinez Herrera Oscar Paul
 - Huerta Espinoza Diego
+- Hernandez Hernandez Manuela 
 ## 🚀 Requisitos
 
 - Placa Raspberry Pi Pico W 
@@ -154,3 +155,14 @@ Cada dato se publica en los siguientes **tópicos**:
 <img width="1600" height="850" alt="image" src="https://github.com/user-attachments/assets/a3955243-338c-49c8-ab5c-bceb8df1830d" />
 <img width="1600" height="850" alt="image" src="https://github.com/user-attachments/assets/73b18312-2876-4813-89a1-9d4e5d24bff7" />
 
+
+##  Conclusión del Proyecto
+
+---
+El proyecto “Sistema de Monitoreo de Plantas con MicroPython y Flespi MQTT” demostró la viabilidad de integrar tecnologías IoT para la simulación y futura implementación de sistemas inteligentes de control ambiental. A través del uso de un microcontrolador compatible con MicroPython (como el Raspberry Pi Pico W o ESP32), se logró establecer una comunicación eficiente mediante el protocolo MQTT hacia el broker de Flespi, enviando lecturas simuladas de temperatura, humedad, luz, suelo y nivel de agua.
+
+Este desarrollo permitió comprender el funcionamiento de la conectividad WiFi, la publicación de datos mediante tópicos MQTT, y la estructura modular del código en Python, reforzando competencias clave en IoT, redes inalámbricas y comunicación máquina a máquina (M2M).
+
+Además, se resaltó la flexibilidad del sistema al permitir sustituir los valores simulados por sensores reales (como DHT11 o LDR), lo que abre la puerta a una futura expansión del proyecto hacia un entorno de monitoreo físico de cultivos.
+
+En conclusión, este proyecto no solo cumplió con los objetivos propuestos al establecer una comunicación IoT funcional, sino que también sentó las bases para el desarrollo de soluciones agrícolas inteligentes, sostenibles y escalables, orientadas al Internet de las Cosas (IoT) y al monitoreo automatizado de entornos naturales.
